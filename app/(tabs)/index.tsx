@@ -20,6 +20,13 @@ export default function HomeTab() {
         </Text>
       </Pressable>
 
+      <Pressable style={styles.card} onPress={() => router.push("/actu")}>
+        <Text style={styles.cardTitle}>📰 Actu</Text>
+        <Text style={styles.cardText}>
+          Voir les dernières actualités de la plateforme
+        </Text>
+      </Pressable>
+
       <Pressable style={styles.logout} onPress={() => router.replace("/login")}>
         <Text style={styles.logoutText}>Se déconnecter</Text>
       </Pressable>
