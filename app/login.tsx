@@ -1,233 +1,174 @@
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-type Role = "titulaire" | "preparateur" | "etudiant" | "pharmacien";
-
-export default function LoginScreen() {
-  const router = useRouter();
-
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>("titulaire");
 
-  const handleLogin = () => {
-    // Pour l’instant on ne fait pas de vraie auth (API plus tard)
-    // On vérifie juste que l’utilisateur a tapé quelque chose
+  // 👇 preuve visuelle
+  const [debugMsg, setDebugMsg] = useState("");
+
+  const onLogin = () => {
+    // ✅ preuve immédiate (même si Alert ne s’affiche pas)
+    setDebugMsg("✅ Clique détecté sur 'Se connecter'");
+
+    // Validation
     if (!email.trim() || !password.trim()) {
-      // Ici tu pourrais mettre une alerte, mais on reste simple
+      setDebugMsg("❌ Email et mot de passe sont obligatoires.");
       return;
     }
 
-    // Redirection selon le rôle
-    if (role === "titulaire") router.replace("/titulaire" as any);
-    else if (role === "preparateur") router.replace("/preparateur" as any);
-    else if (role === "etudiant") router.replace("/etudiant" as any);
-    else router.replace("/pharmacien" as any);
+    setDebugMsg("✅ Ok. Redirection vers /(tabs)...");
+    router.replace("/(tabs)");
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Connexion</Text>
-      <Text style={styles.subtitle}>Choisis ton rôle puis connecte-toi</Text>
-
-      <View style={styles.roleBox}>
-        <Text style={styles.sectionTitle}>Rôle</Text>
-
-        <View style={styles.roleRow}>
-          <Pressable
-            style={[
-              styles.roleBtn,
-              role === "titulaire" && styles.roleBtnActive,
-            ]}
-            onPress={() => setRole("titulaire")}
-          >
-            <Text
-              style={[
-                styles.roleText,
-                role === "titulaire" && styles.roleTextActive,
-              ]}
-            >
-              Titulaire
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.roleBtn,
-              role === "preparateur" && styles.roleBtnActive,
-            ]}
-            onPress={() => setRole("preparateur")}
-          >
-            <Text
-              style={[
-                styles.roleText,
-                role === "preparateur" && styles.roleTextActive,
-              ]}
-            >
-              Préparateur
-            </Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.roleRow}>
-          <Pressable
-            style={[
-              styles.roleBtn,
-              role === "etudiant" && styles.roleBtnActive,
-            ]}
-            onPress={() => setRole("etudiant")}
-          >
-            <Text
-              style={[
-                styles.roleText,
-                role === "etudiant" && styles.roleTextActive,
-              ]}
-            >
-              Étudiant
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={[
-              styles.roleBtn,
-              role === "pharmacien" && styles.roleBtnActive,
-            ]}
-            onPress={() => setRole("pharmacien")}
-          >
-            <Text
-              style={[
-                styles.roleText,
-                role === "pharmacien" && styles.roleTextActive,
-              ]}
-            >
-              Pharmacien
-            </Text>
-          </Pressable>
-        </View>
+    <ScrollView contentContainerStyle={styles.page}>
+      <View style={styles.headerCard}>
+        <Text style={styles.kicker}>Content de te revoir sur</Text>
+        <Text style={styles.title}>Pharmeet</Text>
+        <Text style={styles.subtitle}>
+          Connecte-toi pour trouver un remplacement ou recruter rapidement.
+        </Text>
       </View>
 
-      <View style={styles.form}>
-        <Text style={styles.sectionTitle}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="ex: nom@domaine.fr"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+      <View style={styles.formCard}>
+        <Text style={styles.formTitle}>Connexion</Text>
 
-        <Text style={styles.sectionTitle}>Mot de passe</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="••••••••"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <View style={{ marginBottom: 12 }}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder="ex: nom@email.com"
+            placeholderTextColor="#8AA0B6"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={styles.input}
+          />
+        </View>
+
+        <View style={{ marginBottom: 12 }}>
+          <Text style={styles.label}>Mot de passe</Text>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Ton mot de passe"
+            placeholderTextColor="#8AA0B6"
+            autoCapitalize="none"
+            secureTextEntry
+            style={styles.input}
+          />
+        </View>
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.primaryBtn,
+            pressed && { opacity: 0.85 },
+          ]}
+          onPress={onLogin}
+        >
+          <Text style={styles.primaryBtnText}>Se connecter</Text>
+        </Pressable>
+
+        {/* 👇 texte debug visible */}
+        {debugMsg ? <Text style={styles.debug}>{debugMsg}</Text> : null}
+
+        <Pressable style={styles.linkBtn} onPress={() => router.push("/signup")}>
+          <Text style={styles.linkText}>
+            Pas de compte ?{" "}
+            <Text style={styles.linkTextBold}>Créer un compte</Text>
+          </Text>
+        </Pressable>
+
+        <Text style={styles.note}>
+          Pour l’instant: écran de connexion “MVP”. Après, on branche la vraie
+          authentification + sécurité + sessions.
+        </Text>
       </View>
-
-      <Pressable style={styles.loginBtn} onPress={handleLogin}>
-        <Text style={styles.loginBtnText}>Se connecter</Text>
-      </Pressable>
-
-      <Pressable
-        style={styles.linkBtn}
-        onPress={() => router.push("/signup" as any)}
-      >
-        <Text style={styles.linkText}>Créer un compte</Text>
-      </Pressable>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
+  page: {
+    padding: 16,
+    paddingBottom: 40,
+    backgroundColor: "#F2F7FF",
+    flexGrow: 1,
     justifyContent: "center",
-    backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "900",
-    textAlign: "center",
-    marginBottom: 6,
-  },
-  subtitle: {
-    textAlign: "center",
-    color: "#555",
-    marginBottom: 18,
-  },
-  roleBox: {
-    backgroundColor: "#f4f4f5",
-    borderRadius: 14,
-    padding: 14,
+
+  headerCard: {
+    backgroundColor: "#E8F3FF",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#CFE6FF",
     marginBottom: 14,
   },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: "#111827",
-    marginBottom: 8,
+  kicker: { color: "#2A5B87", fontWeight: "700" },
+  title: { fontSize: 30, fontWeight: "900", color: "#0E2A3F", marginTop: 2 },
+  subtitle: { marginTop: 6, color: "#2A5B87", lineHeight: 18 },
+
+  formCard: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#D6E8FF",
   },
-  roleRow: {
-    flexDirection: "row",
-    gap: 10,
+  formTitle: {
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#0E2A3F",
     marginBottom: 10,
   },
-  roleBtn: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  roleBtnActive: {
-    backgroundColor: "#111827",
-    borderColor: "#111827",
-  },
-  roleText: {
-    fontWeight: "800",
-    color: "#111827",
-  },
-  roleTextActive: {
-    color: "#fff",
-  },
-  form: {
-    marginBottom: 12,
+
+  label: {
+    marginBottom: 6,
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#0E2A3F",
   },
   input: {
-    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "#D6E8FF",
     borderRadius: 12,
+    paddingVertical: 11,
     paddingHorizontal: 12,
-    paddingVertical: 12,
-    marginBottom: 12,
-  },
-  loginBtn: {
-    backgroundColor: "#111827",
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 6,
-  },
-  loginBtnText: {
-    color: "#fff",
-    fontWeight: "900",
     fontSize: 16,
+    backgroundColor: "#F7FBFF",
+    color: "#0E2A3F",
   },
-  linkBtn: {
+
+  primaryBtn: {
+    marginTop: 8,
+    backgroundColor: "#12B76A",
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: "center",
-    marginTop: 12,
   },
-  linkText: {
-    color: "#111827",
+  primaryBtnText: { color: "white", fontSize: 16, fontWeight: "900" },
+
+  debug: {
+    marginTop: 10,
+    fontSize: 13,
     fontWeight: "800",
-    textDecorationLine: "underline",
+    color: "#0E2A3F",
   },
+
+  linkBtn: { marginTop: 14, alignItems: "center" },
+  linkText: { color: "#2A5B87", fontWeight: "700" },
+  linkTextBold: { color: "#0E7CFF", fontWeight: "900" },
+
+  note: { marginTop: 12, color: "#5B7286", fontSize: 12, lineHeight: 16 },
 });
