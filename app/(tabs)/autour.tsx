@@ -4,7 +4,7 @@ export default function Autour() {
   return (
     <View style={styles.page}>
       <Text style={styles.title}>Autour de moi</Text>
-      <Text>Ici: carte + pharmacies/offres autour (plus tard avec GPS).</Text>
+      <Text>Plus tard: GPS + carte + pharmacies/offres autour.</Text>
     </View>
   );
 }
