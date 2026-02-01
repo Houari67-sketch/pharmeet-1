@@ -11,12 +11,12 @@ type Profile = {
   phone: string;
   city: string;
   accountType: AccountType;
-  availabilityDays: string[]; // ["Lun", ...]
-  availabilityNotes: string;  // "soir + week-end", etc
+  availabilityDays: string[];
+  availabilityNotes: string;
 };
 
 const STORAGE_KEY = "pharmeet_profile_v1";
-const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"] as const;
+const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const ACCOUNT_TYPES: AccountType[] = ["Pharmacien", "Préparateur", "Étudiant", "Employeur"];
 
 const emptyProfile: Profile = {
@@ -30,15 +30,7 @@ const emptyProfile: Profile = {
   availabilityNotes: "",
 };
 
-function Chip({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
+function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={[styles.chip, selected && styles.chipSelected]}>
       <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
@@ -49,6 +41,18 @@ function Chip({
 export default function ProfilScreen() {
   const [profile, setProfile] = useState<Profile>(emptyProfile);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        if (raw) setProfile(JSON.parse(raw));
+      } catch {
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const completion = useMemo(() => {
     const fields = [
@@ -64,55 +68,39 @@ export default function ProfilScreen() {
     return Math.round((filled / fields.length) * 100);
   }, [profile]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        if (raw) setProfile(JSON.parse(raw));
-      } catch {
-        // si ça casse, tant pis, on ne va pas pleurer
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  function toggleDay(day: string) {
+    setProfile((p) => {
+      const exists = p.availabilityDays.includes(day);
+      return {
+        ...p,
+        availabilityDays: exists ? p.availabilityDays.filter((d) => d !== day) : [...p.availabilityDays, day],
+      };
+    });
+  }
 
   async function save() {
-    // validation minimaliste (humains: champions du champ vide)
     if (!profile.email.includes("@")) {
-      Alert.alert("Profil", "Email invalide (ou juste pas un email).");
+      Alert.alert("Profil", "Email invalide.");
       return;
     }
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
       Alert.alert("Profil", "Enregistré ✅");
     } catch {
-      Alert.alert("Profil", "Échec de sauvegarde. Ton téléphone a décidé de ne pas coopérer.");
+      Alert.alert("Profil", "Impossible d’enregistrer.");
     }
-  }
-
-  function toggleDay(day: string) {
-    setProfile((p) => {
-      const exists = p.availabilityDays.includes(day);
-      return {
-        ...p,
-        availabilityDays: exists
-          ? p.availabilityDays.filter((d) => d !== day)
-          : [...p.availabilityDays, day],
-      };
-    });
   }
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.page, { justifyContent: "center", alignItems: "center" }]}>
         <Text>Chargement…</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.title}>Compléter le profil</Text>
       <Text style={styles.subtitle}>Progression: {completion}%</Text>
 
@@ -160,12 +148,7 @@ export default function ProfilScreen() {
       <Text style={styles.sectionTitle}>Type de compte</Text>
       <View style={styles.chipsRow}>
         {ACCOUNT_TYPES.map((t) => (
-          <Chip
-            key={t}
-            label={t}
-            selected={profile.accountType === t}
-            onPress={() => setProfile((p) => ({ ...p, accountType: t }))}
-          />
+          <Chip key={t} label={t} selected={profile.accountType === t} onPress={() => setProfile((p) => ({ ...p, accountType: t }))} />
         ))}
       </View>
 
@@ -181,7 +164,7 @@ export default function ProfilScreen() {
       <TextInput
         value={profile.availabilityNotes}
         onChangeText={(v) => setProfile((p) => ({ ...p, availabilityNotes: v }))}
-        placeholder="Ex: soir, week-end, 9h-17h, etc."
+        placeholder="Ex: soir, week-end, 9h-17h…"
         style={[styles.input, { height: 90, textAlignVertical: "top" }]}
         multiline
       />
@@ -193,43 +176,47 @@ export default function ProfilScreen() {
   );
 }
 
+const GREEN = "#12B76A";
+const BORDER = "#D6E8FF";
+const BLUE = "#2A5B87";
+
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 10 },
-  title: { fontSize: 18, fontWeight: "900" },
-  subtitle: { color: "#444", marginBottom: 6 },
-  sectionTitle: { fontSize: 15, fontWeight: "800", marginTop: 10 },
-  helper: { color: "#444", fontSize: 13 },
+  page: { padding: 16, gap: 10, backgroundColor: "#F7FAFF" },
+  title: { fontSize: 18, fontWeight: "900", color: "#0E2A3F" },
+  subtitle: { color: BLUE, fontWeight: "700" },
+  sectionTitle: { fontSize: 15, fontWeight: "900", marginTop: 10, color: "#0E2A3F" },
+  helper: { color: BLUE, fontWeight: "700" },
 
   row: { flexDirection: "row", gap: 10 },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
+    borderColor: BORDER,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: "#fff",
-    fontSize: 14,
+    backgroundColor: "white",
   },
 
   chipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+
   chip: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: BORDER,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: "#fff",
+    backgroundColor: "white",
   },
-  chipSelected: { borderColor: "#111", backgroundColor: "#111" },
-  chipText: { fontSize: 13, color: "#111", fontWeight: "700" },
-  chipTextSelected: { color: "#fff" },
+  chipSelected: { backgroundColor: GREEN, borderColor: GREEN },
+  chipText: { fontWeight: "900", color: BLUE },
+  chipTextSelected: { color: "white" },
 
   saveBtn: {
     marginTop: 8,
-    backgroundColor: "#111",
+    backgroundColor: GREEN,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
   },
-  saveBtnText: { color: "#fff", fontWeight: "900" },
+  saveBtnText: { color: "white", fontWeight: "900" },
 });

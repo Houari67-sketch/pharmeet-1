@@ -1,33 +1,19 @@
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function Login() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // 👇 preuve visuelle
   const [debugMsg, setDebugMsg] = useState("");
 
   const onLogin = () => {
-    // ✅ preuve immédiate (même si Alert ne s’affiche pas)
-    setDebugMsg("✅ Clique détecté sur 'Se connecter'");
+    setDebugMsg("✅ Clique détecté. Redirection…");
 
-    // Validation
-    if (!email.trim() || !password.trim()) {
-      setDebugMsg("❌ Email et mot de passe sont obligatoires.");
-      return;
-    }
-
-    setDebugMsg("✅ Ok. Redirection vers /(tabs)...");
-    router.replace("/(tabs)");
+    // ✅ FORCER la redirection (même si champs vides) pour tester la navigation
+    router.replace("/(tabs)/annonces");
   };
 
   return (
@@ -70,29 +56,19 @@ export default function Login() {
         </View>
 
         <Pressable
-          style={({ pressed }) => [
-            styles.primaryBtn,
-            pressed && { opacity: 0.85 },
-          ]}
+          style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.85 }]}
           onPress={onLogin}
         >
           <Text style={styles.primaryBtnText}>Se connecter</Text>
         </Pressable>
 
-        {/* 👇 texte debug visible */}
         {debugMsg ? <Text style={styles.debug}>{debugMsg}</Text> : null}
 
         <Pressable style={styles.linkBtn} onPress={() => router.push("/signup")}>
           <Text style={styles.linkText}>
-            Pas de compte ?{" "}
-            <Text style={styles.linkTextBold}>Créer un compte</Text>
+            Pas de compte ? <Text style={styles.linkTextBold}>Créer un compte</Text>
           </Text>
         </Pressable>
-
-        <Text style={styles.note}>
-          Pour l’instant: écran de connexion “MVP”. Après, on branche la vraie
-          authentification + sécurité + sessions.
-        </Text>
       </View>
     </ScrollView>
   );
@@ -169,6 +145,4 @@ const styles = StyleSheet.create({
   linkBtn: { marginTop: 14, alignItems: "center" },
   linkText: { color: "#2A5B87", fontWeight: "700" },
   linkTextBold: { color: "#0E7CFF", fontWeight: "900" },
-
-  note: { marginTop: 12, color: "#5B7286", fontSize: 12, lineHeight: 16 },
 });
